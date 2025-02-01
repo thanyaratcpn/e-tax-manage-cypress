@@ -1,0 +1,20 @@
+{
+  "name": "offices-cypress",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "cypress-cucumber-preprocessor": {
+    "stepDefinitions": "./cypress/support/step-definitions/"
+  },
+  "keywords": [],
+  "author": "",
+  "description": "",
+  "devDependencies": {
+    "cypress": "^13.17.0",
+    "cypress-cucumber-preprocessor": "^4.3.1",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-fill-command": "^1.0.2"
+  }
+}

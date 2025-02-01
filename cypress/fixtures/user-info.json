@@ -1,0 +1,46 @@
+{
+  "CustomerSupportAccount": {
+    "csa01": {
+      "username": "tester_cs_001",
+      "password": "@AutomateCus001"
+    },
+    "csa02": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "FinanceAccount": {
+    "faa01": {
+      "username": "username tester_fa_001",
+      "password": "@AutomateFa001"
+    },
+    "faa02": {
+      "username": "",
+      "password": ""
+    }
+  
+  },
+  "ITSupportAccount": {
+    "its01": {
+      "username": "tester_it_001",
+      "password": "@AutomateIt001"
+    },
+    "its02": {
+      "username": "",
+      "password": ""
+    }
+  },
+  "AdminAccount": {
+    "ada01": {
+      "username": "tester_ad_001",
+      "password": "@AutomateAd001"
+    },
+    "ada02": {
+      "username": "",
+      "password": ""
+    }
+  
+  }
+}
+ 
+
