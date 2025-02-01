@@ -1,0 +1,47 @@
+Merge Title format
+Merge title : {Story_no) {Category) | {Reviewer} | {Description} Example : MIRPLAT-1234 | Test | Jariya | Adding new scenario for validate miniQR
+
+Category
+[ ] New Feature
+[ ] Refactor
+[ ] Fix Issue
+[ ] Documentation
+[ ] Testing
+[ ] MVP
+
+MVP Detail
+When Category is MVP pleae input
+
+Description
+Brief summary of the purpose of the merge request.
+
+Changes
+List of changes or new features
+Brief explanation of the changes or refactors made
+
+Packages that change
+[ ] bay-assist
+[ ] bay-blacklist
+[ ] bay-cmc
+[ ] bay-commons
+[ ] bay-dopa
+[ ] bay-fatca
+[ ] bay-frame
+[ ] bay-keptmission
+[ ] bay-ndid
+[ ] bay-rm-kyc
+[ ] bay-signature
+[ ] bay-transfer
+[ ] bay-webview
+[ ] sunipps-frame
+[ ] sunipps-score
+[ ] sunipps-base
+
+Category:
+Feat | Add or update about develop feature
+Fix | Fix bugs
+Docs | Update document
+
+Refactor
+Test | Change test
+Conf | Change config
