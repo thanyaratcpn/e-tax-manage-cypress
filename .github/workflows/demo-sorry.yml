@@ -21,7 +21,7 @@ jobs:
           - 27017:27017
       minio:
         image: minio/minio
-        command: server /data
+        options: --entrypoint "sh -c 'minio server /data'"
         ports:
           - 9000:9000
         env:
@@ -48,6 +48,7 @@ jobs:
           S3_BUCKET_NAME: "sorry-cypress"
           S3_NO_PATH_STYLE: "true"
           PORT: "8080"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
