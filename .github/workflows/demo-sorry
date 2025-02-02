@@ -1,91 +1,69 @@
-version: '3.6'
+name: Cypress Docker Compose Workflow
 
-// # Replace each <mongo-user> with the desired username
-// # Replace each <mongo-pass> with the desired password
-// # Replace each <minio-ip-address> with the publicly available ip address or url without http(s)
-// # Replace <graphql-ip-address> with the publicly available ip address or url without http(s)
+on:
+  schedule:
+    - cron: "*/1 * * * *"  # กำหนดให้ทำงานทุกๆ 1 นาที
+  push:
+    branches:
+      - main  # จะทำงานเมื่อมีการ push ไปที่ branch main
+  pull_request:
+    branches:
+      - main
 
-services:
-  mongo:
-    image: mongo:4.4
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: '<mongo-user>'
-      MONGO_INITDB_ROOT_PASSWORD: '<mongo-pass>'
-    volumes:
-      - ./data/data-mongo-cypress:/data/db
-    ports:
-      - 27017:27017
-  director:
-    image: agoldis/sorry-cypress-director:latest
-    environment:
-      DASHBOARD_URL: http://localhost:8080
-      EXECUTION_DRIVER: '../execution/mongo/driver'
-      MONGODB_URI: 'mongodb://<mongo-user>:<mongo-pass>@mongo:27017'
-      MONGODB_DATABASE: 'sorry-cypress'
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
 
-      SCREENSHOTS_DRIVER: '../screenshots/minio.driver'
-      GITLAB_JOB_RETRIES: 'false'
-      MINIO_ACCESS_KEY: '<minio-user>'
-      MINIO_SECRET_KEY: '<minio-pass>'
-      MINIO_ENDPOINT: '<minio-ip-address>'
-      MINIO_URL: 'http://<minio-ip-address>'
-      MINIO_PORT: '9000'
-      MINIO_USESSL: 'false'
-      MINIO_BUCKET: sorry-cypress
-      PROBE_LOGGER: "false"
-    ports:
-      - 1234:1234
-      - 9000:9000
-      - 9090:9090
-    depends_on:
-      - mongo
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+      minio:
+        image: minio/minio
+        command: server /data
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ACCESS_KEY: "sorry-cypress"
+          MINIO_SECRET_KEY: "this-is-a-secret"
+      director:
+        image: agoldis/sorry-cypress-director
+        env:
+          MONGODB_URI: "mongodb://mongo:27017/sorry-cypress"
+          S3_ACCESS_KEY_ID: "sorry-cypress"
+          S3_SECRET_ACCESS_KEY: "this-is-a-secret"
+          S3_ENDPOINT: "http://minio:9000"
+          S3_BUCKET_NAME: "sorry-cypress"
+          S3_NO_PATH_STYLE: "true"
+      sorry-cypress-dashboard:
+        image: agoldis/sorry-cypress-dashboard
+        ports:
+          - 8080:8080
+        env:
+          MONGODB_URI: "mongodb://mongo:27017/sorry-cypress"
+          S3_ACCESS_KEY_ID: "sorry-cypress"
+          S3_SECRET_ACCESS_KEY: "this-is-a-secret"
+          S3_ENDPOINT: "http://minio:9000"
+          S3_BUCKET_NAME: "sorry-cypress"
+          S3_NO_PATH_STYLE: "true"
+          PORT: "8080"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  api:
-    image: agoldis/sorry-cypress-api:latest
-    environment:
-      MONGODB_URI: 'mongodb://<mongo-user>:<mongo-pass>@mongo:27017'
-      MONGODB_DATABASE: 'sorry-cypress'
-      APOLLO_PLAYGROUND: 'false'
-    ports:
-      - 4000:4000
-    depends_on:
-      - mongo
+      - name: Set up Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d  # ใช้ Docker Compose ในการรันคอนเทนเนอร์ใน Pipeline
 
-  dashboard:
-    image: agoldis/sorry-cypress-dashboard:latest
-    environment:
-      GRAPHQL_SCHEMA_URL: http://<graphql-ip-address>:4000
-      GRAPHQL_CLIENT_CREDENTIALS: ''
-      PORT: 8080
-      CI_URL: ''
-    ports:
-      - 8080:8080
-    depends_on:
-      - mongo
-      - api
+      - name: Wait for services to be ready
+        run: |
+          sleep 30  # รอเวลาบางส่วนให้คอนเทนเนอร์ต่างๆ สามารถเริ่มทำงานได้
 
-  storage:
-    image: minio/minio
-    network_mode: service:director
-    environment:
-      MINIO_ROOT_USER: '<minio-user>'
-      MINIO_ROOT_PASSWORD: '<minio-pass>'
-    volumes:
-      - ./data/data-minio-cypress:/data
-    command: minio server --console-address ":9090" /data
+      - name: Run Cypress tests
+        run: |
+          docker-compose exec cypress cypress run --record --key 372eba7b-2be8-4406-bd6e-4d7b2563c79f
 
-  createbuckets:
-    image: minio/mc
-    network_mode: service:director
-    depends_on:
-      - storage
-    entrypoint: >
-      /bin/sh -c "
-      sleep 3;
-      /usr/bin/mc config host add myminio http://localhost:9000 <minio-user> <minio-pass>;
-      /usr/bin/mc rm -r --dangerous --force myminio/sorry-cypress;
-      /usr/bin/mc mb myminio/sorry-cypress;
-      /usr/bin/mc anonymous set download myminio/sorry-cypress;
-      /usr/bin/mc anonymous set public myminio/sorry-cypress;
-      exit 0;
-      "
+      - name: Stop Docker Compose services
+        run: |
+          docker-compose down
