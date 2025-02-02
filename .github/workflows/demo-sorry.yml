@@ -62,7 +62,7 @@ jobs:
 
       - name: Run Cypress tests
         run: |
-          docker-compose exec cypress cypress run --record --key 372eba7b-2be8-4406-bd6e-4d7b2563c79f
+          docker-compose exec cypress cypress run --record --key b0c24596-9777-4425-b934-bdef2019e480
 
       - name: Stop Docker Compose services
         run: |
